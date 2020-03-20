@@ -56,23 +56,17 @@ def regional_summarize(df, var, file_name):
     fileout = './parsed_data/' + file_name
 #     print(fileout)
 
-    data_tsSum = df.groupby(['Country', 'Date', 'Region'])[var].sum()
+    data_tsSum = df.groupby(['Country', 'Lat', 'Lon', 'Date', 'Region'])[var].sum()
     data_tsSum = data_tsSum.reset_index()
-
+    
     data_tsSum_sort = data_tsSum.set_index("Country").sort_values(by='Date', ascending=True)
     data_tsSum_sort = data_tsSum_sort.reset_index()
 
     data_tsSum_sort.to_feather(fileout)
 
 #     return(data_tsSum_sort)
+
+#     return(data_tsSum_sort)
 regional_summarize(all_countries, 'Confirmed', 'regional_confirmed.feather')
 regional_summarize(all_countries, 'Deaths', 'regional_deaths.feather')
 regional_summarize(all_countries, 'Recovered', 'regional_recovered.feather')
-
-# data_tsSum = data.groupby(['Country', 'Date', 'Region'])['Confirmed'].sum()
-# data_tsSum = data_tsSum.reset_index()
-#
-# data_tsSum_sort = data_tsSum.set_index("Country").sort_values(by='Date', ascending=True)
-# data_tsSum_sort = data_tsSum_sort.reset_index()
-#
-# data_tsSum_sort.to_feather('./parsed_data/all_countries_segment.feather')
