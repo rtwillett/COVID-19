@@ -14,23 +14,25 @@ def ts_record_parse(df, var_title = "Value"):
 country_labs = pd.read_csv('./additional_data/countries_labels.csv')
 country_labs.columns = ['Countries', 'Region', 'Lat', 'Lon']
 
-confirmed = pd.read_csv("./csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv")
+confirmed = pd.read_csv("./csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
 confirmed_long = ts_record_parse(confirmed, 'Confirmed')
+confirmed_long["Country"] = confirmed_long.Country.apply(lambda x: x.replace("*", "")) # To remove the * from Taiwan
+confirmed_long['tooltip_confirmed'] = confirmed_long.apply(lambda x : x.Country + ": " + str(x.Confirmed), axis=1)
 
-pd.DataFrame(confirmed_long.Country.unique(), columns=["Countries"]).to_csv("country_list.csv", index=False, header=True)
-
-
-
-deaths = pd.read_csv("./csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv")
-deaths_long = ts_record_parse(deaths, "Deaths")
+# pd.DataFrame(confirmed_long.Country.unique(), columns=["Countries"]).to_csv("country_list.csv", index=False, header=True)
 
 
-recovered = pd.read_csv("./csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv")
-recovered_long = ts_record_parse(recovered, 'Recovered')
+
+# deaths = pd.read_csv("./csse_covid_19_data/csse_covid_19_time_series/time_series_19-deaths_global.csv")
+# deaths_long = ts_record_parse(deaths, "Deaths")
+
+
+# recovered = pd.read_csv("./csse_covid_19_data/csse_covid_19_time_series/time_series_19-recovered_global.csv")
+# recovered_long = ts_record_parse(recovered, 'Recovered')
 
 
 # Merging the timeseries data by day and location for COVID-19 confirmed cases, deaths, and recovered cases.
-all_countries = confirmed_long.merge(deaths_long, on=["Province", "Country", "Lat", "Lon", "Date"]).merge(recovered_long, on=["Province", "Country", "Lat", "Lon", "Date"])
+all_countries = confirmed_long#.merge(deaths_long, on=["Province", "Country", "Lat", "Lon", "Date"]).merge(recovered_long, on=["Province", "Country", "Lat", "Lon", "Date"])
 
 # With the group_by sums aggregating data across the countries, need to renew the geocode data. This will drop the old coordinates
 all_countries.drop(columns=['Lat', 'Lon'], inplace=True)
@@ -43,12 +45,11 @@ all_countries.to_feather("./parsed_data/all_countries_ts.feather")
 # SUMMARIZING BY Date
 # Summing all of the confirmed cases, deaths, and recovered patients for each day
 data_totTime_confirmed = all_countries.groupby("Date")['Confirmed'].sum().reset_index()
-data_totTime_deaths = all_countries.groupby("Date")['Deaths'].sum().reset_index()
-data_totTime_recovered = all_countries.groupby("Date")['Recovered'].sum().reset_index()
+# data_totTime_deaths = all_countries.groupby("Date")['Deaths'].sum().reset_index()
+# data_totTime_recovered = all_countries.groupby("Date")['Recovered'].sum().reset_index()
 
 all_countries_summary = copy.deepcopy(data_totTime_confirmed)
-all_countries_summary = all_countries_summary.merge(data_totTime_deaths, on='Date').merge(data_totTime_recovered, on='Date')
-all_countries_summary.head()
+# all_countries_summary = all_countries_summary.merge(data_totTime_deaths, on='Date').merge(data_totTime_recovered, on='Date')
 
 all_countries_summary.to_feather("./parsed_data/all_countries_summary.feather")
 
@@ -64,6 +65,7 @@ def regional_summarize(df, var, file_name):
 
     data_tsSum_sort = data_tsSum.set_index("Country").sort_values(by='Date', ascending=True)
     data_tsSum_sort = data_tsSum_sort.reset_index()
+    data_tsSum_sort['tooltip_confirmed'] = data_tsSum_sort.apply(lambda x : x.Country + ": " + str(x.Confirmed), axis=1)
 
     data_tsSum_sort.to_feather(fileout)
 
@@ -84,8 +86,9 @@ def calc_newCases(df, country):
 
         df_out = df_filt.iloc[1:,:].copy()
         df_out['new_cases'] = new_cases
+        df_out['tooltip_newcases'] = df_out.apply(lambda x : x.Country + ": " + str(x.new_cases), axis=1)
 
-        return(df_out[['Country','Date', 'Region', 'Lat', 'Lon', 'new_cases']])
+        return(df_out[['Country','Date', 'Region', 'Lat', 'Lon', 'tooltip_newcases', 'new_cases']])
 
 def calculate_new_cases(df):
     unique_countries = df.Country.unique().tolist()
@@ -99,8 +102,8 @@ def calculate_new_cases(df):
     return (df_output)
 
 regional_confirmed = regional_summarize(all_countries, 'Confirmed', 'regional_confirmed.feather')
-regional_deaths = regional_summarize(all_countries, 'Deaths', 'regional_deaths.feather')
-regional_recovered = regional_summarize(all_countries, 'Recovered', 'regional_recovered.feather')
+# regional_deaths = regional_summarize(all_countries, 'Deaths', 'regional_deaths.feather')
+# regional_recovered = regional_summarize(all_countries, 'Recovered', 'regional_recovered.feather')
 
 # Calculating a dataframe for the date, country and new confirmed cases that appeared that day.
 calculate_new_cases(regional_confirmed)
