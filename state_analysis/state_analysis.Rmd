@@ -1,0 +1,67 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(feather)
+library(ggrepel)
+```
+
+
+
+```{r}
+state_data = read_feather("data/us_states.feather")
+state_data_new = read_feather("data/us_states_newcases.feather")
+atlantic = read_feather("data/states_data_atlantic.feather")
+```
+
+```{r}
+recent_testing <- atlantic %>% filter(date == max(date)) # Filtering most recent date
+recent_testing <- recent_testing %>% dplyr::select(name, state, totalTestResults, pop_2019) %>% mutate(totTestNorm_100k = totalTestResults/pop_2019*100000)
+recent_testing <- recent_testing[!duplicated(recent_testing),] # Removing duplicated Puerto Rico records
+
+```
+
+
+
+```{r}
+recent_testing %>% arrange(desc(totTestNorm_100k)) %>% tail(10)
+```
+
+
+```{r}
+normalized_covid <- state_data_new %>% 
+  filter(date == max(date)) %>% 
+  dplyr::select(state, abbrev, cases_pop100k, deaths_pop100k, new_cases_pop100k, new_deaths_pop100k)
+
+normalized_covid
+```
+
+```{r}
+all_data <- merge(normalized_covid, recent_testing, by.x="abbrev",  by.y="state")
+all_data
+```
+
+
+
+
+
+```{r}
+ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) + 
+  geom_point() + 
+  # geom_text_repel() + 
+  labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People") + 
+  theme_classic()
+```
+
+```{r}
+ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) + 
+  geom_point() + 
+  geom_text_repel() + 
+  labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People") + 
+  theme_classic()
+```
+
