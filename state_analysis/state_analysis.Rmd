@@ -28,7 +28,7 @@ recent_testing <- recent_testing[!duplicated(recent_testing),] # Removing duplic
 
 
 ```{r}
-recent_testing %>% arrange(desc(totTestNorm_100k)) %>% tail(10)
+recent_testing %>% arrange(desc(totTestNorm_100k)) %>% head(10)
 ```
 
 
