@@ -52,6 +52,7 @@ all_data
 ```{r}
 ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) + 
   geom_point() + 
+  # geom_smooth() +
   # geom_text_repel() + 
   labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People") + 
   theme_classic()
@@ -59,7 +60,7 @@ ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) +
 
 ```{r}
 ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) + 
-  geom_point() + 
+  geom_point(color = "") + 
   geom_text_repel() + 
   labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People") + 
   theme_classic()
