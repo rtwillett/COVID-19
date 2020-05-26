@@ -41,7 +41,7 @@ state_atlantic <- read_feather("parsed_data/states_data_atlantic.feather")
 ggplot(all_countries_agg, aes(x=Date, y=Confirmed)) + 
       geom_col() + 
       theme_classic(base_size = 16) +
-      labs(x="", y="Cases", title="Global Cases by Day from Jan 22, 2020") + 
+      labs(x="", y="Cases", title="Global Cases by Day from Jan 22, 2020", caption="Cypress River Advisors LLC ©, 2020") + 
       geom_hline(yintercept = 1000000, linetype="dashed", color="red") + 
       annotate(geom="text", x=as.POSIXct(strptime("2020-02-10", "%Y-%m-%d")), y=1150000, label="1 million cases", color="red") +
       geom_hline(yintercept = 2000000, linetype="dashed", color="red") + 
@@ -140,7 +140,7 @@ ggplot(dataplot_test, aes(x=date, y=value, col=result)) +
   geom_hline(yintercept = 900000, linetype="dashed", color="red") + 
   annotate(geom="text", x=as.POSIXct(strptime("2020-03-10", "%Y-%m-%d")), y=920000, label="'Bare Minimum Scenario': 900,000 tests per day", color="red") +
   scale_y_continuous(labels = scales::comma) + 
-  labs(x = "", y = "US Testing Capacity (Tests/Day)", title="Testing Falls Short of Reopening Requirements") + 
+  labs(x = "", y = "US Testing Capacity (Tests/Day)", title="Testing Falls Short of Reopening Requirements", caption="Cypress River Advisors LLC ©, 2020") + 
   theme(plot.title = element_text(hjust = 0.5))
 
 ggsave("total_testing_us.png", width=8, height=4)

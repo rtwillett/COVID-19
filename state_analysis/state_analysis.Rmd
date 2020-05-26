@@ -62,7 +62,7 @@ ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) +
 ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) + 
   geom_point(color = "red") + 
   geom_text_repel() + 
-  labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People", title="Detection Is Correlated with Testing") + 
+  labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People", title="Detection Is Correlated with Testing", caption="Cypress River Advisors LLC ©, 2020") + 
   theme_classic(base_size = 16) + 
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -73,7 +73,7 @@ ggsave("cases_v_test_normalized.png", width=8, height=6)
 ggplot(all_data, aes(x=totTestNorm_100k, y=cases_pop100k, label=state)) + 
   geom_point(color = "red") + 
   geom_text_repel() + 
-  labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People", title="Detection Is Correlated with Testing") + 
+  labs(x="Tests Per 100,000 People", y="COVID-19 Cases Per 100,000 People", title="Detection Is Correlated with Testing", caption="Cypress River Advisors LLC ©, 2020") + 
   theme_classic(base_size = 18) + 
   theme(plot.title = element_text(hjust = 0.5))
 
