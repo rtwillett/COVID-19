@@ -128,5 +128,5 @@ regional_deaths = regional_summarize(all_countries, 'Deaths', 'regional_deaths.f
 # regional_recovered = regional_summarize(all_countries, 'Recovered', 'regional_recovered.feather')
 
 # Calculating a dataframe for the date, country and new confirmed cases that appeared that day.
-calculate_rate(regional_confirmed, "Confirmed")
-calculate_rate(regional_deaths, "Deaths")
+country_confirmed_new = calculate_rate(regional_confirmed, "Confirmed")
+country_deaths_new = calculate_rate(regional_deaths, "Deaths")
