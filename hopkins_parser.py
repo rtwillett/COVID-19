@@ -130,3 +130,34 @@ regional_deaths = regional_summarize(all_countries, 'Deaths', 'regional_deaths.f
 # Calculating a dataframe for the date, country and new confirmed cases that appeared that day.
 country_confirmed_new = calculate_rate(regional_confirmed, "Confirmed")
 country_deaths_new = calculate_rate(regional_deaths, "Deaths")
+
+def rolling_ave_calc(df, var):
+    testing = df.set_index('Date')[[var]] #loc[df.abbrev == "TX"][["date", "state", var]]
+    testing_roll = testing.rolling(window=7, min_periods=1).mean().reset_index()
+    return testing_roll
+
+def rolling_ave(df, country, var):
+    df_sub = df.loc[df.Country == country][["Date", "Country", var]]
+    df_rolling = rolling_ave_calc(df_sub, var)
+    df_rolling["Country"] = country
+    return df_rolling
+
+countryList_newCases = country_confirmed_new.Country.unique().tolist()
+
+def normalize_measure(num1, num2):
+    norm_val = num1/num2*100000
+    return norm_val
+
+country_confirmed_newnorm = country_confirmed_new.merge(country_pop[["name", 'pop2020']], left_on="Country", right_on="name").drop(columns=["name"])
+country_confirmed_newnorm["new_confirmed100k"] = country_confirmed_newnorm.apply(lambda x: normalize_measure(x.new_confirmed, x.pop2020), axis=1)
+
+rolling_cases_country = [rolling_ave(country_confirmed_new, country, "new_confirmed") for country in countryList_newCases]
+rolling_cases_country = pd.concat(rolling_cases_country)
+rolling_cases_country = rolling_cases_country.merge(country_labs[["Countries", "Region"]], left_on='Country', right_on='Countries').drop(columns=["Countries"])
+
+rolling_deaths_country = [rolling_ave(country_deaths_new, country, "new_deaths") for country in countryList_newCases]
+rolling_deaths_country = pd.concat(rolling_deaths_country)
+rolling_deaths_country = rolling_deaths_country.merge(country_labs[["Countries", "Region"]], left_on='Country', right_on='Countries').drop(columns=["Countries"])
+
+rolling_cases_country.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
+rolling_deaths_country.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')
