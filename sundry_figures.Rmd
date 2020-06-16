@@ -1,0 +1,214 @@
+---
+title: "R Notebook"
+output: html_notebook
+author: "Ryan Willett"
+---
+
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+all_countries_seg <- read_feather("parsed_data/regional_confirmed.feather")
+all_countries_seg_deaths <- read_feather("parsed_data/regional_deaths.feather")
+
+rolling_cases <- read_feather("parsed_data/rolling_cases_country.feather")
+rolling_deaths <- read_feather("parsed_data/rolling_deaths_country.feather")
+
+rolling_cases_states <- read_feather("parsed_data/states_cases_rolling.feather")
+rolling_deaths_states <- read_feather("parsed_data/states_deaths_rolling.feather")
+
+```
+
+
+```{r}
+#NEW CASES
+asia_newcases <- rolling_cases %>% filter(Region=='Asia' | Region=="Middle East")
+europe_newcases <- rolling_cases %>% filter(Region=='Europe')
+west_newcases <- rolling_cases %>% filter(Region=='North America' | Region=="South America")
+
+#NEW DEATHS
+asia_newdeaths <- rolling_deaths %>% filter(Region=='Asia' | Region=="Middle East")
+europe_newdeaths <- rolling_deaths %>% filter(Region=='Europe')
+west_newdeaths <- rolling_deaths %>% filter(Region=='North America' | Region=="South America")
+
+```
+
+```{r}
+sw_states <- c("Arizona", "New Mexico", "Nevada", "Utah")
+carolinas <- c("North Carolina", "South Carolina")
+```
+
+```{r}
+sw_data <- rolling_cases_states %>% filter(state %in% sw_states)
+carolinas_data <- rolling_cases_states %>% filter(state %in% carolinas)
+```
+
+```{r}
+sw_data2 <- sw_data %>% filter(date > as.POSIXct("2020-03-01", "%Y-%m-%d"))
+sw_data2
+```
+
+
+```{r}
+ggplot(sw_data2, aes(x=date, y=new_cases_pop100k, col=state)) + 
+  geom_line(size=0.75) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="State") + 
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-15", "%Y-%m-%d")), color="red", size=1, linetype='dotted') + # End of AZ SAH orders
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-31", "%Y-%m-%d")), color="blue", size=1, linetype='dotted') + # End of NM SAH orders
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-09", "%Y-%m-%d")), color="green", size=1, linetype='dotted') + # End of NV SAH orders
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-15", "%Y-%m-%d")), color="purple", size=1, linetype='dotted')  # End of UT SAH orders
+  # scale_x_datetime(limits = ymd_h(c("2020-03-13 00", "2020-04-20 23")))
+```
+
+```{r}
+cny_extended <- all_countries_seg %>% filter(Date >= as.POSIXct("2020-01-25", format="%Y-%m-%d")) %>% 
+  filter(Date < as.POSIXct("2020-02-14", format="%Y-%m-%d")) %>% 
+  filter(Confirmed > 0) %>% 
+  pull(Country) %>% 
+  unique() %>% 
+  sort()
+
+cny_extended
+```
+
+```{r}
+cny <- all_countries_seg %>% filter(Date >= as.POSIXct("2020-01-25", format="%Y-%m-%d")) %>% 
+  filter(Date < as.POSIXct("2020-01-31", format="%Y-%m-%d")) %>% 
+  filter(Confirmed > 0) %>% 
+  pull(Country) %>% 
+  unique() %>% 
+  sort()
+
+cny
+```
+
+```{r}
+before_cny <- all_countries_seg %>% filter(Date < as.POSIXct("2020-01-25", format="%Y-%m-%d")) %>% 
+  # filter(Date < as.POSIXct("2020-02-14", format="%Y-%m-%d")) %>% 
+  filter(Confirmed > 0) %>% 
+  pull(Country) %>% 
+  unique()
+
+before_cny
+```
+
+Countries with first cases appearing during the full span of the official and extended CNY holiday
+```{r}
+countries_fcases_cny_extended <- setdiff(cny_extended, before_cny)
+countries_fcases_cny_extended
+```
+
+Countries with first cases appearing during the official CNY holiday
+```{r}
+countries_fcases_cny <- setdiff(cny, before_cny)
+countries_fcases_cny
+```
+
+Countries with first cases appearing during the extended CNY holiday
+```{r}
+countries_fcases_extended <- setdiff(firstcases_cny_extended, firstcases_cny)
+countries_fcases_extended
+```
+
+```{r}
+before_data <- rolling_cases %>% filter(Country %in% before_cny)
+cny_data <- rolling_cases %>% filter(Country %in% countries_fcases_cny)
+extended_data <- rolling_cases %>% filter(Country %in% countries_fcases_cny_extended)
+onlyextended_data <- rolling_cases %>% filter(Country %in% countries_fcases_extended)
+```
+
+```{r}
+ggplot(before_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
+  geom_line(size=0.75) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  )
+```
+
+```{r}
+ggplot(cny_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
+  geom_line(size=0.75) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  )
+```
+
+```{r}
+ggplot(extended_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
+  geom_line(size=0.75) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  )
+```
+
+```{r}
+ggplot(onlyextended_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
+  geom_line(size=0.75) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  )
+```
