@@ -8,6 +8,7 @@ author: "Ryan Willett"
 ```{r}
 library(ggplot2)
 library(tidyverse)
+library(feather)
 ```
 
 ```{r}
@@ -53,15 +54,26 @@ sw_data2
 
 
 ```{r}
+
+man_col <- scale_color_manual(values = c("red", "darkgreen", "orange", "blue"))
+
 ggplot(sw_data2, aes(x=date, y=new_cases_pop100k, col=state)) + 
   geom_line(size=0.75) + 
-  theme_classic(base_size = 16) + 
-  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="State") + 
-  geom_vline(xintercept = as.POSIXct(strptime("2020-05-15", "%Y-%m-%d")), color="red", size=1, linetype='dotted') + # End of AZ SAH orders
-  geom_vline(xintercept = as.POSIXct(strptime("2020-05-31", "%Y-%m-%d")), color="blue", size=1, linetype='dotted') + # End of NM SAH orders
-  geom_vline(xintercept = as.POSIXct(strptime("2020-05-09", "%Y-%m-%d")), color="green", size=1, linetype='dotted') + # End of NV SAH orders
-  geom_vline(xintercept = as.POSIXct(strptime("2020-05-15", "%Y-%m-%d")), color="purple", size=1, linetype='dotted')  # End of UT SAH orders
-  # scale_x_datetime(limits = ymd_h(c("2020-03-13 00", "2020-04-20 23")))
+  theme_classic(base_size = 16) + man_col +
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average\nVertical lines indicate end of stay-at-home orders (SAHO)", col="State") + 
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-15", "%Y-%m-%d")), color="red", size=0.75, linetype='dotdash') + # End of AZ SAH orders
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-31", "%Y-%m-%d")), color="orange", size=0.75, linetype='dotted') + # End of NM SAH orders
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-09", "%Y-%m-%d")), color="darkgreen", size=0.75, linetype='twodash') + # End of NV SAH orders
+  geom_vline(xintercept = as.POSIXct(strptime("2020-05-15", "%Y-%m-%d")), color="blue", size=0.75, linetype='dotted') + # End of UT SAH orders
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-05-07", "%Y-%m-%d")), y = 15, label = "End of NV SAHO", color = "darkgreen",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-05-13", "%Y-%m-%d")), y = 15, label = "End of UT SAHO", color = "blue",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-05-17", "%Y-%m-%d")), y = 15, label = "End of AZ SAHO", color = "red",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-05-29", "%Y-%m-%d")), y = 15, label = "End of NM SAHO", color = "orange",
+             angle = 90)
+  # scale_x_datetime(limits = ymd_h(c("2020-03-13 00", "2020-04-20 23"))) +
 ```
 
 ```{r}
