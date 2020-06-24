@@ -43,7 +43,7 @@ Iceland,Europe,Scandanavia
 Lithuania,Europe,Eastern Europe
 Mexico,North America,North America
 New Zealand,Australia,Australia
-Nigeria,Africa,West Africa
+Nigeria,Africa,Central Africa
 Ireland,Europe,Western Europe
 Luxembourg,Europe,Western Europe
 Monaco,Europe,Western Europe
@@ -54,7 +54,7 @@ Armenia,Europe,Eastern Europe
 Dominican Republic,North America,North America
 Indonesia,Asia,Southeast Asia
 Portugal,Europe,Western Europe
-Andorra,Europe,
+Andorra,Europe,Western Europe
 Latvia,Europe,Eastern Europe
 Morocco,Africa,North Africa
 Saudi Arabia,Asia,Middle East
@@ -78,14 +78,14 @@ Peru,South America,South America
 Serbia,Europe,Eastern Europe
 Slovakia,Europe,Eastern Europe
 Togo,Africa,Southeast Asia
-Malta,Europe,
-Martinique,North America,
-Bulgaria,Europe,
-Maldives,Africa,
+Malta,Europe,Eastern Europe
+Martinique,North America,North America
+Bulgaria,Europe,Eastern Europe
+Maldives,Africa,South Asia
 Bangladesh,Asia,South Asia
 Paraguay,South America,South America
 Albania,Europe,Eastern Europe
-Cyprus,Europe,
+Cyprus,Europe,Eastern Europe
 Brunei,Asia,Southeast Asia
 US,North America,North America
 Burkina Faso,Africa,West Africa
@@ -102,7 +102,7 @@ Czechia,Europe,Central Europe
 Taiwan*,Asia,East Asia
 Vietnam,Asia,Southeast Asia
 Russia,Europe,Eastern Europe
-Moldova,Europe,W
+Moldova,Europe,Eastern Europe
 Bolivia,South America,South America
 Honduras,North America,North America
 United Kingdom,Europe,Western Europe
@@ -111,43 +111,43 @@ Cote d'Ivoire,Africa,West Africa
 Jamaica,North America,North America
 Turkey,Europe,Eastern Europe
 Cuba,North America,North America
-Guyana,Africa,
+Guyana,Africa,South America
 Kazakhstan,Asia,Central Asia
 Ethiopia,Africa,North Africa
 Sudan,Africa,North Africa
-Guinea,Africa,
+Guinea,Africa,South America
 Aruba,South America,South America
 Kenya,Africa,East Africa
-Antigua and Barbuda,North America,
+Antigua and Barbuda,North America,North America
 Uruguay,South America,South America
-Ghana,Africa,
+Ghana,Africa,West Africa
 Jersey,Europe,Western Europe
-Namibia,Africa,
-Seychelles,North America,
+Namibia,Africa,South Africa
+Seychelles,North America,East Africa
 Trinidad and Tobago,North America,North America
-Venezuela,South America,
-Eswatini,Africa,
-Gabon,Africa,
+Venezuela,South America,South America
+Eswatini,Africa,South Africa
+Gabon,Africa,Central Africa
 Guatemala,North America,North America
-Guernsey,Europe,
+Guernsey,Europe,Western Europe
 Mauritania,Africa,North Africa
 Rwanda,Africa,East Africa
 Saint Lucia,North America,North America
 Saint Vincent and the Grenadines,North America,North America
-Suriname,Africa,
+Suriname,Africa,South America
 Kosovo,Europe,Eastern Europe
 Central African Republic,Africa,Central Africa
 Congo (Brazzaville),Africa,Central Africa
-Equatorial Guinea,Africa,
-Uzbekistan,Asia,
+Equatorial Guinea,Africa,Central Africa
+Uzbekistan,Asia,Central Asia
 Netherlands,Europe,Western Europe
-Benin,Africa,
+Benin,Africa,West Africa
 Greenland,Europe,Scandanavia
 Liberia,Africa,West Africa
 Republic of the Congo,Africa,Central Africa
 Somalia,Africa,East Africa
-Tanzania,Africa,
+Tanzania,Africa,Central Africa
 The Bahamas,North America,North America
 Barbados,North America,North America
 Montenegro,Europe,Central Europe
-The Gambia,Africa,
+The Gambia,Africa,West Africa
