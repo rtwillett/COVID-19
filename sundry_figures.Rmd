@@ -122,7 +122,7 @@ countries_fcases_cny
 
 Countries with first cases appearing during the extended CNY holiday
 ```{r}
-countries_fcases_extended <- setdiff(firstcases_cny_extended, firstcases_cny)
+countries_fcases_extended <- setdiff(countries_fcases_cny_extended, countries_fcases_cny)
 countries_fcases_extended
 ```
 
@@ -132,6 +132,12 @@ cny_data <- rolling_cases %>% filter(Country %in% countries_fcases_cny)
 extended_data <- rolling_cases %>% filter(Country %in% countries_fcases_cny_extended)
 onlyextended_data <- rolling_cases %>% filter(Country %in% countries_fcases_extended)
 ```
+
+```{r}
+include_from_before <- c("US", "France", "Japan", "Korea, South", "Singapore", "Nepal")
+before_data <- before_data %>% filter(Country %in% include_from_before)
+```
+
 
 ```{r}
 ggplot(before_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
@@ -155,6 +161,20 @@ ggplot(before_data, aes(x=Date, y=new_confirmed100k, col=Country)) +
     col="black"
   )
 ```
+
+```{r}
+cny_data$Country %>% unique()
+```
+
+
+```{r}
+east_asia <- c("Cambodia", "Philippines")
+south_asia <- c("India", "Sri Lanka")
+europe <- c("Finland", "Germany", "Italy", "Russia", "Sweden", "United Kingdom")
+namerica <- c("Canada", "United States")
+middleeast <- c("United Arab Emirates")
+```
+
 
 ```{r}
 ggplot(cny_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
