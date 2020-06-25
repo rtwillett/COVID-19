@@ -12,6 +12,8 @@ library(feather)
 ```
 
 ```{r}
+country_labels <- read.csv("additional_data/countries_labels.csv")
+
 all_countries_seg <- read_feather("parsed_data/regional_confirmed.feather")
 all_countries_seg_deaths <- read_feather("parsed_data/regional_deaths.feather")
 
