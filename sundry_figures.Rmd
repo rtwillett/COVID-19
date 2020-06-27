@@ -25,7 +25,21 @@ rolling_deaths_states <- read_feather("parsed_data/states_deaths_rolling.feather
 
 ```
 
+```{r}
+country_labels %>% head()
+```
 
+```{r}
+rolling_cases %>% head()
+```
+
+Merge the Subregion onto the country
+```{r}
+rolling_cases_srg = merge(rolling_cases, country_labels, by.x = c('Country', 'Region'), by.y = c('Countries', 'Region'))
+rolling_deaths_srg = merge(rolling_deaths, country_labels, by.x = c('Country', 'Region'), by.y = c('Countries', 'Region'))
+```
+
+Subsetting by General Region
 ```{r}
 #NEW CASES
 asia_newcases <- rolling_cases %>% filter(Region=='Asia' | Region=="Middle East")
@@ -78,6 +92,11 @@ ggplot(sw_data2, aes(x=date, y=new_cases_pop100k, col=state)) +
   # scale_x_datetime(limits = ymd_h(c("2020-03-13 00", "2020-04-20 23"))) +
 ```
 
+#################################
+    Chinese New Year Analysis
+#################################
+
+Extracting Countries with cases during the extended CNY holiday. Raw numbers are used instead of rolling means for "accuracy" of numbers. 
 ```{r}
 cny_extended <- all_countries_seg %>% filter(Date >= as.POSIXct("2020-01-25", format="%Y-%m-%d")) %>% 
   filter(Date < as.POSIXct("2020-02-14", format="%Y-%m-%d")) %>% 
@@ -89,6 +108,7 @@ cny_extended <- all_countries_seg %>% filter(Date >= as.POSIXct("2020-01-25", fo
 cny_extended
 ```
 
+Extracting Countries with cases during the actual CNY holiday. Raw numbers are used instead of rolling means for "accuracy" of numbers. 
 ```{r}
 cny <- all_countries_seg %>% filter(Date >= as.POSIXct("2020-01-25", format="%Y-%m-%d")) %>% 
   filter(Date < as.POSIXct("2020-01-31", format="%Y-%m-%d")) %>% 
@@ -100,6 +120,7 @@ cny <- all_countries_seg %>% filter(Date >= as.POSIXct("2020-01-25", format="%Y-
 cny
 ```
 
+Extracting Countries with first cases before the CNY holiday. Raw numbers are used instead of rolling means for "accuracy" of numbers. 
 ```{r}
 before_cny <- all_countries_seg %>% filter(Date < as.POSIXct("2020-01-25", format="%Y-%m-%d")) %>% 
   # filter(Date < as.POSIXct("2020-02-14", format="%Y-%m-%d")) %>% 
@@ -128,11 +149,34 @@ countries_fcases_extended <- setdiff(countries_fcases_cny_extended, countries_fc
 countries_fcases_extended
 ```
 
+
+Find the first case for each country in the dataset
 ```{r}
-before_data <- rolling_cases %>% filter(Country %in% before_cny)
-cny_data <- rolling_cases %>% filter(Country %in% countries_fcases_cny)
-extended_data <- rolling_cases %>% filter(Country %in% countries_fcases_cny_extended)
-onlyextended_data <- rolling_cases %>% filter(Country %in% countries_fcases_extended)
+firstcase <- all_countries_seg %>% 
+  dplyr::select(Country, Date, Confirmed) %>% 
+  filter(Confirmed > 1) %>% 
+  group_by(Country) %>% 
+  summarise(min_case = min(Confirmed), Date = first(Date))
+
+firstcase
+```
+
+Creating a column with countries and dates together
+```{r}
+firstcase <- firstcase %>% 
+  mutate(name_date_lab = paste0("(", year(Date), "-", month(Date), "-", day(Date), ")  ", Country)) %>% 
+  dplyr::select(Country, name_date_lab)
+  # arrange(Date)
+
+rolling_cases_srg <- merge(rolling_cases_srg, firstcase, by='Country')
+```
+
+
+```{r}
+before_data <- rolling_cases_srg %>% filter(Country %in% before_cny)
+cny_data <- rolling_cases_srg %>% filter(Country %in% countries_fcases_cny)
+extended_data <- rolling_cases_srg %>% filter(Country %in% countries_fcases_cny_extended)
+onlyextended_data <- rolling_cases_srg %>% filter(Country %in% countries_fcases_extended)
 ```
 
 ```{r}
@@ -140,12 +184,12 @@ include_from_before <- c("US", "France", "Japan", "Korea, South", "Singapore", "
 before_data <- before_data %>% filter(Country %in% include_from_before)
 ```
 
-
+Plot of countries with first cases before CNY
 ```{r}
-ggplot(before_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
+p1 <- ggplot(before_data, aes(x=Date, y=new_confirmed100k, col=name_date_lab)) + 
   geom_line(size=0.75) + 
   theme_classic(base_size = 16) + 
-  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country\n(First Case Date) Name") +
   geom_rect(
     fill = "yellow", alpha = 0.01,
     xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
@@ -161,25 +205,212 @@ ggplot(before_data, aes(x=Date, y=new_confirmed100k, col=Country)) +
     ymin = 0,
     ymax = Inf, 
     col="black"
-  )
+  ) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-01-28", "%Y-%m-%d")), y = 7, label = "Chinese New Year Holiday", color = "black",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-02-06", "%Y-%m-%d")), y = 7, label = "Extended Holiday", color = "black",
+             angle = 90)
+
+ggsave(p1, filename = "images/beforeCNY.png", width = 8)
+
+p1
 ```
 
 ```{r}
 cny_data$Country %>% unique()
 ```
 
-
+Plot of countries with first cases during CNY. Colored by subregion
 ```{r}
-east_asia <- c("Cambodia", "Philippines")
-south_asia <- c("India", "Sri Lanka")
-europe <- c("Finland", "Germany", "Italy", "Russia", "Sweden", "United Kingdom")
-namerica <- c("Canada", "United States")
-middleeast <- c("United Arab Emirates")
+ggplot(cny_data, aes(x=Date, y=new_confirmed100k, col=Subregion)) + 
+  geom_line(size=0.75, aes(group=name_date_lab)) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Subregion") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-01-28", "%Y-%m-%d")), y = 5, label = "Chinese New Year Holiday", color = "black",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-02-06", "%Y-%m-%d")), y = 5, label = "Extended Holiday", color = "black",
+             angle = 90)
+
 ```
 
+```{r}
+cny_data_agg <- cny_data %>% group_by(Subregion, Date) %>% summarize(sum_cases = sum(new_confirmed100k))
+cny_data_agg
+```
 
 ```{r}
-ggplot(cny_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
+p2 <- ggplot(cny_data_agg, aes(x=Date, y=sum_cases, col=Subregion)) + 
+  geom_line(size=0.75, aes(group=Subregion)) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Subregion") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-01-28", "%Y-%m-%d")), y = 5, label = "Chinese New Year Holiday", color = "black",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-02-06", "%Y-%m-%d")), y = 5, label = "Extended Holiday", color = "black",
+             angle = 90)
+
+ggsave(p2, filename="images/cny_subregion_countries_agg.png", width=8)
+
+p2
+```
+
+Grouped by Subregion and Colored by Country
+```{r}
+p3 <- ggplot(cny_data, aes(x=Date, y=new_confirmed100k, col=name_date_lab)) + 
+  geom_line(size=0.75, aes(group=Country)) + 
+  facet_grid(vars(Subregion), scales="free") + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country\n(First Case Date) Name") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  )
+
+ggsave(p3, filename = "images/cny_facet.png", height = 15, width = 8)
+
+p3
+```
+
+```{r}
+extended_data_agg <- extended_data %>% group_by(Subregion, Date) %>% summarize(sum_cases = sum(new_confirmed100k))
+extended_data_agg
+```
+
+```{r}
+ggplot(extended_data, aes(x=Date, y=new_confirmed100k, col=Subregion)) + 
+  geom_line(size=0.75, aes(group = Country)) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Subregion") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-01-28", "%Y-%m-%d")), y = 7, label = "Chinese New Year Holiday", color = "black",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-02-06", "%Y-%m-%d")), y = 7, label = "Extended Holiday", color = "black",
+             angle = 90)
+
+# ggsave(p3, filename="images/extendedCNY_subregion.png", width=8)
+
+# p3
+```
+
+```{r}
+p3 <- ggplot(extended_data_agg, aes(x=Date, y=sum_cases, col=Subregion)) + 
+  geom_line(size=0.75) + 
+  theme_classic(base_size = 16) + 
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Subregion") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-01-28", "%Y-%m-%d")), y = 17, label = "Chinese New Year Holiday", color = "black",
+             angle = 90) + 
+  annotate(geom = "text", x = as.POSIXct(strptime("2020-02-06", "%Y-%m-%d")), y = 17, label = "Extended Holiday", color = "black",
+             angle = 90)
+
+ggsave(p3, filename="images/extendedCNY_subregion.png", width=8)
+
+p3
+```
+
+```{r}
+p4 <- ggplot(extended_data, aes(x=Date, y=new_confirmed100k, col=name_date_lab)) + 
+  geom_line(size=0.75, aes(group = Country)) + 
+  theme_classic(base_size = 16) + 
+  facet_grid(vars(Subregion), scale='free') +
+  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
+  geom_rect(
+    fill = "yellow", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  ) +
+  geom_rect(
+    fill = "orange", alpha = 0.01,
+    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
+    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
+    ymin = 0,
+    ymax = Inf, 
+    col="black"
+  )
+
+ggsave(p4, filename="images/extendedCNY_facet.png", height=15, width=8)
+
+p4
+```
+
+```{r}
+p5 <- ggplot(onlyextended_data, aes(x=Date, y=new_confirmed100k, col=name_date_lab)) + 
   geom_line(size=0.75) + 
   theme_classic(base_size = 16) + 
   labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
@@ -199,50 +430,8 @@ ggplot(cny_data, aes(x=Date, y=new_confirmed100k, col=Country)) +
     ymax = Inf, 
     col="black"
   )
-```
 
-```{r}
-ggplot(extended_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
-  geom_line(size=0.75) + 
-  theme_classic(base_size = 16) + 
-  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
-  geom_rect(
-    fill = "yellow", alpha = 0.01,
-    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
-    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
-    ymin = 0,
-    ymax = Inf, 
-    col="black"
-  ) +
-  geom_rect(
-    fill = "orange", alpha = 0.01,
-    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
-    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
-    ymin = 0,
-    ymax = Inf, 
-    col="black"
-  )
-```
+ggsave(p5, filename = "images/onlyextended_subregion.png", width = 8)
 
-```{r}
-ggplot(onlyextended_data, aes(x=Date, y=new_confirmed100k, col=Country)) + 
-  geom_line(size=0.75) + 
-  theme_classic(base_size = 16) + 
-  labs(x="", y="New Cases Per 100k People", caption="7 Day Rolling Average", col="Country") +
-  geom_rect(
-    fill = "yellow", alpha = 0.01,
-    xmin = as.POSIXct(strptime("2020-01-25", "%Y-%m-%d")),
-    xmax = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
-    ymin = 0,
-    ymax = Inf, 
-    col="black"
-  ) +
-  geom_rect(
-    fill = "orange", alpha = 0.01,
-    xmin = as.POSIXct(strptime("2020-01-31", "%Y-%m-%d")),
-    xmax = as.POSIXct(strptime("2020-02-14", "%Y-%m-%d")),
-    ymin = 0,
-    ymax = Inf, 
-    col="black"
-  )
+p5
 ```
