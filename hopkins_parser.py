@@ -215,5 +215,8 @@ rolling_deaths_country = [rolling_ave(country_deaths_new, country, "new_deaths")
 rolling_deaths_country = pd.concat(rolling_deaths_country)
 rolling_deaths_country = rolling_deaths_country.merge(country_labs[["Countries", "Region"]], left_on='Country', right_on='Countries').drop(columns=["Countries"])
 
-rolling_cases_country.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
-rolling_deaths_country.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')
+# rolling_cases_country.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
+# rolling_deaths_country.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')
+
+country_confirmed_newnorm.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
+country_confirmed_newnorm.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')

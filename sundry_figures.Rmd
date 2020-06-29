@@ -14,6 +14,8 @@ library(feather)
 ```{r}
 country_labels <- read.csv("additional_data/countries_labels.csv")
 
+all_countries_agg <- read_feather("parsed_data/all_countries_summary.feather")
+
 all_countries_seg <- read_feather("parsed_data/regional_confirmed.feather")
 all_countries_seg_deaths <- read_feather("parsed_data/regional_deaths.feather")
 
@@ -435,3 +437,19 @@ ggsave(p5, filename = "images/onlyextended_subregion.png", width = 8)
 
 p5
 ```
+
+
+
+Jason wants to know how many days are separating 
+
+```{r}
+mil_c <- all_countries_agg %>% mutate(mil_cases = floor(Confirmed/1000000)) %>% group_by(mil_cases) %>% summarise(first_date = first(Date))
+mil_c
+```
+
+```{r}
+time_diff <- mil_c$first_date %>% diff()
+mil_c <- mil_c[-1,]
+mil_c['lag'] <- time_diff
+```
+
