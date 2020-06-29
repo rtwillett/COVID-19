@@ -218,5 +218,5 @@ rolling_deaths_country = rolling_deaths_country.merge(country_labs[["Countries",
 # rolling_cases_country.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
 # rolling_deaths_country.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')
 
-country_confirmed_newnorm.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
-country_deaths_newnorm.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')
+rolling_cases_country.reset_index(drop=True).to_feather('./parsed_data/rolling_cases_country.feather')
+rolling_deaths_country.reset_index(drop=True).to_feather('./parsed_data/rolling_deaths_country.feather')
