@@ -207,11 +207,11 @@ country_confirmed_newnorm["new_confirmed100k"] = country_confirmed_newnorm.apply
 country_deaths_newnorm = country_deaths_new.merge(country_pop[["Location", 'PopTotal']], left_on="Country", right_on="Location").drop(columns=["Location"])
 country_deaths_newnorm["new_deaths100k"] = country_deaths_newnorm.apply(lambda x: normalize_measure(x.new_deaths, x.PopTotal), axis=1)
 
-rolling_cases_country = [rolling_ave(country_confirmed_new, country, "new_confirmed") for country in countryList_newCases]
+rolling_cases_country = [rolling_ave(country_confirmed_newnorm, country, "new_confirmed100k") for country in countryList_newCases]
 rolling_cases_country = pd.concat(rolling_cases_country)
 rolling_cases_country = rolling_cases_country.merge(country_labs[["Countries", "Region"]], left_on='Country', right_on='Countries').drop(columns=["Countries"])
 
-rolling_deaths_country = [rolling_ave(country_deaths_new, country, "new_deaths") for country in countryList_newCases]
+rolling_deaths_country = [rolling_ave(country_deaths_newnorm, country, "new_deaths100k") for country in countryList_newCases]
 rolling_deaths_country = pd.concat(rolling_deaths_country)
 rolling_deaths_country = rolling_deaths_country.merge(country_labs[["Countries", "Region"]], left_on='Country', right_on='Countries').drop(columns=["Countries"])
 
